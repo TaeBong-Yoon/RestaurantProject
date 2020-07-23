@@ -1,6 +1,10 @@
 package kr.co.bong.eatgo.interfaces;
 
+import kr.co.bong.eatgo.application.RestaurantService;
+import kr.co.bong.eatgo.domain.MenuItemRepository;
+import kr.co.bong.eatgo.domain.MenuItemRepositoryImpl;
 import kr.co.bong.eatgo.domain.RestaurantRepository;
+import kr.co.bong.eatgo.domain.RestaurantRepositoryImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +25,17 @@ public class RestaurantControllerTest {
     @Autowired
     private MockMvc mvc;
 
-    @SpyBean
+    @SpyBean(RestaurantService.class)
+    private RestaurantService restaurantService;
+
+    @SpyBean(RestaurantRepositoryImpl.class)
     private RestaurantRepository restaurantRepository;
 
+    @SpyBean(MenuItemRepositoryImpl.class)
+    private MenuItemRepository menuItemRepository;
+
     @Test
-    public void list() throws Exception{
+    public void list() throws Exception {
         mvc.perform(get("/restaurants"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(
@@ -36,8 +46,9 @@ public class RestaurantControllerTest {
                 ));
 
     }
+
     @Test
-    public void detail() throws Exception{
+    public void detail() throws Exception {
         mvc.perform(get("/restaurants/1004"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(
@@ -45,6 +56,9 @@ public class RestaurantControllerTest {
                 ))
                 .andExpect(content().string(
                         containsString("\"name\":\"Curry House\"")
+                ))
+                .andExpect(content().string(
+                        containsString("Hot Curry")
                 ));
         mvc.perform(get("/restaurants/2020"))
                 .andExpect(status().isOk())
