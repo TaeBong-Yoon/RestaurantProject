@@ -1,22 +1,27 @@
 package kr.co.bong.eatgo.interfaces;
 
 import kr.co.bong.eatgo.application.RestaurantService;
-import kr.co.bong.eatgo.domain.MenuItemRepository;
-import kr.co.bong.eatgo.domain.MenuItemRepositoryImpl;
-import kr.co.bong.eatgo.domain.RestaurantRepository;
-import kr.co.bong.eatgo.domain.RestaurantRepositoryImpl;
+import kr.co.bong.eatgo.domain.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.hamcrest.core.StringContains.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(RestaurantController.class)
@@ -25,17 +30,16 @@ public class RestaurantControllerTest {
     @Autowired
     private MockMvc mvc;
 
-    @SpyBean(RestaurantService.class)
+    @MockBean
     private RestaurantService restaurantService;
-
-    @SpyBean(RestaurantRepositoryImpl.class)
-    private RestaurantRepository restaurantRepository;
-
-    @SpyBean(MenuItemRepositoryImpl.class)
-    private MenuItemRepository menuItemRepository;
 
     @Test
     public void list() throws Exception {
+
+        List<Restaurant> restaurants = new ArrayList<>();
+        restaurants.add(new Restaurant(1004L, "Curry House", "Seoul"));
+        given(restaurantService.getRestaurants()).willReturn(restaurants);
+
         mvc.perform(get("/restaurants"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(
@@ -49,6 +53,13 @@ public class RestaurantControllerTest {
 
     @Test
     public void detail() throws Exception {
+
+        Restaurant restaurant1 = new Restaurant(1004L,"Curry House","Seoul");
+        restaurant1.addMenuItem(new MenuItem("Hot Curry"));
+        Restaurant restaurant2 = new Restaurant(2020L, "Hamburger House","Seoul");
+        given(restaurantService.getRestaurant(1004L)).willReturn(restaurant1);
+        given(restaurantService.getRestaurant(2020L)).willReturn(restaurant2);
+
         mvc.perform(get("/restaurants/1004"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(
@@ -68,6 +79,19 @@ public class RestaurantControllerTest {
                 .andExpect(content().string(
                         containsString("\"name\":\"Hamburger House\"")
                 ));
+    }
+
+    @Test
+    public void create() throws Exception {
+
+        mvc.perform(post("/restaurants")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Pizza Hosue\",\"address\":\"Busan\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("location","/restaurants/1234"))
+                .andExpect(content().string("{}"));
+
+        verify(restaurantService).addRestaurant(any());
     }
 
 }
