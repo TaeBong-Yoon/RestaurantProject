@@ -3,6 +3,7 @@ package kr.co.bong.eatgo.application;
 import kr.co.bong.eatgo.domain.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -36,14 +37,20 @@ public class RestaurantServiceTest {
 
     private void mockMenuItemRepository() {
         List<MenuItem> menuItems = new ArrayList<>();
-        menuItems.add(new MenuItem("Hot Curry"));
+        menuItems.add(MenuItem.builder()
+                .name("Hot Curry")
+                .build());
         given(menuItemRepository.findAllByRestaurantId(1004L)).willReturn(menuItems);
 
     }
 
     private void mockRestaurantRepository() {
         List<Restaurant> restaurants = new ArrayList<>();
-        Restaurant restaurant = new Restaurant(1004L, "Curry House", "Seoul");
+        Restaurant restaurant = Restaurant.builder()
+                .id(1004L)
+                .name("Curry House")
+                .address("Seoul")
+                .build();
         restaurants.add(restaurant);
         given(restaurantRepository.findAll()).willReturn(restaurants);
 
@@ -68,11 +75,33 @@ public class RestaurantServiceTest {
 
     @Test
     public void addRestaurant() {
-        Restaurant restaurant = new Restaurant("Pizza House", "Busan");
-        Restaurant saved = new Restaurant(1234L,"Pizza House", "Busan");
-        given(restaurantRepository.save(any())).willReturn(saved);
+        given(restaurantRepository.save(any())).will(invocation -> {
+            Restaurant restaurant = invocation.getArgument(0);
+            restaurant.setId(1234L);
+            return restaurant;
+        });
+
+        Restaurant restaurant = Restaurant.builder()
+                .name("Pizza House")
+                .address("Busan")
+                .build();
+
         Restaurant created = restaurantService.addRestaurant(restaurant);
         assertThat(created.getId(), is(1234L));
+    }
+
+    @Test
+    public void updateRestaurant() {
+        Restaurant restaurant = Restaurant.builder()
+                .id(1004L)
+                .name("Pizza House")
+                .address("Seoul")
+                .build();
+        given(restaurantRepository.findById(1004L)).willReturn(Optional.of(restaurant));
+        restaurantService.updateRestaurant(1004L, "Pizza School", "Busan");
+
+        assertThat(restaurant.getName(), is("Pizza School"));
+        assertThat(restaurant.getAddress(), is("Busan"));
     }
 
 }
