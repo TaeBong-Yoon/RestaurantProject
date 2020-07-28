@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(RestaurantController.class)
-public class RestaurantControllerTest {
+public class RestaurantControllerTests {
 
     @Autowired
     private MockMvc mvc;
@@ -57,7 +57,7 @@ public class RestaurantControllerTest {
     @Test
     public void detailWithExisted() throws Exception {
 
-        Restaurant restaurant1 = Restaurant.builder()
+        Restaurant restaurant = Restaurant.builder()
                 .id(1004L)
                 .name("Curry House")
                 .address("Seoul")
@@ -65,14 +65,16 @@ public class RestaurantControllerTest {
         MenuItem menuItem = MenuItem.builder()
                 .name("Hot Curry")
                 .build();
-        restaurant1.setMenuItems(Arrays.asList(menuItem));
-        Restaurant restaurant2 = Restaurant.builder()
-                .id(2020L)
-                .name("Hamburger House")
-                .address("Seoul")
+        restaurant.setMenuItems(Arrays.asList(menuItem));
+
+        Review review = Review.builder()
+                .name("user")
+                .score(5)
+                .description("Good")
                 .build();
-        given(restaurantService.getRestaurant(1004L)).willReturn(restaurant1);
-        given(restaurantService.getRestaurant(2020L)).willReturn(restaurant2);
+        restaurant.setReviews(Arrays.asList(review));
+
+        given(restaurantService.getRestaurant(1004L)).willReturn(restaurant);
 
         mvc.perform(get("/restaurants/1004"))
                 .andExpect(status().isOk())
@@ -84,14 +86,9 @@ public class RestaurantControllerTest {
                 ))
                 .andExpect(content().string(
                         containsString("Hot Curry")
-                ));
-        mvc.perform(get("/restaurants/2020"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(
-                        containsString("\"id\":2020")
                 ))
                 .andExpect(content().string(
-                        containsString("\"name\":\"Hamburger House\"")
+                        containsString("Good")
                 ));
     }
 

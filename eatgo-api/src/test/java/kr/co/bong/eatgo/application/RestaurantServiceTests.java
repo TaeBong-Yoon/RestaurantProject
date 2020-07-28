@@ -1,9 +1,9 @@
 package kr.co.bong.eatgo.application;
 
 import kr.co.bong.eatgo.domain.*;
+import kr.co.bong.eatgo.interfaces.ReviewRepository;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.Timeout;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -14,9 +14,11 @@ import java.util.Optional;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
-public class RestaurantServiceTest {
+public class RestaurantServiceTests {
 
     private RestaurantService restaurantService;
 
@@ -24,6 +26,8 @@ public class RestaurantServiceTest {
     private RestaurantRepository restaurantRepository;
     @Mock
     private MenuItemRepository menuItemRepository;
+    @Mock
+    private ReviewRepository reviewRepository;
 
     @Before
     public void setUp() {
@@ -31,8 +35,9 @@ public class RestaurantServiceTest {
 
         mockRestaurantRepository();
         mockMenuItemRepository();
+        mockReviewRepository();
 
-        restaurantService = new RestaurantService(restaurantRepository, menuItemRepository);
+        restaurantService = new RestaurantService(restaurantRepository, menuItemRepository, reviewRepository);
     }
 
     private void mockMenuItemRepository() {
@@ -46,24 +51,48 @@ public class RestaurantServiceTest {
 
     private void mockRestaurantRepository() {
         List<Restaurant> restaurants = new ArrayList<>();
+
         Restaurant restaurant = Restaurant.builder()
                 .id(1004L)
                 .name("Curry House")
                 .address("Seoul")
                 .build();
         restaurants.add(restaurant);
-        given(restaurantRepository.findAll()).willReturn(restaurants);
 
+        given(restaurantRepository.findAll()).willReturn(restaurants);
         given(restaurantRepository.findById(1004L)).willReturn(Optional.of(restaurant));
 
+    }
+
+    private void mockReviewRepository() {
+        List<Review> reviews = new ArrayList<>();
+        reviews.add(Review.builder()
+                .name("Curry House")
+                .score(1)
+                .description("Bad")
+                .build());
+
+        given(reviewRepository.findAllByRestaurantId(1004L))
+                .willReturn(reviews);
     }
 
     @Test
     public void getRestaurantWithExisted() {
         Restaurant restaurant = restaurantService.getRestaurant(1004L);
-        MenuItem menuItem = restaurant.getMenuItems().get(0);
-        assertThat(menuItem.getName(), is("Hot Curry"));
+
+        verify(menuItemRepository).findAllByRestaurantId(eq(1004L));
+        verify(reviewRepository).findAllByRestaurantId(any());
+
         assertThat(restaurant.getId(), is(1004L));
+
+        MenuItem menuItem = restaurant.getMenuItems().get(0);
+
+        assertThat(menuItem.getName(), is("Hot Curry"));
+
+        Review review = restaurant.getReviews().get(0);
+
+        assertThat(review.getDescription(), is("Bad"));
+
     }
 
     @Test(expected = RestaurantNotFoundException.class)
@@ -74,6 +103,7 @@ public class RestaurantServiceTest {
     @Test
     public void getRestaurants() {
         List<Restaurant> restaurants = restaurantService.getRestaurants();
+
         Restaurant restaurant = restaurants.get(0);
         assertThat(restaurant.getId(), is(1004L));
     }
@@ -91,7 +121,9 @@ public class RestaurantServiceTest {
                 .address("Busan")
                 .build();
 
+
         Restaurant created = restaurantService.addRestaurant(restaurant);
+
         assertThat(created.getId(), is(1234L));
     }
 
@@ -102,10 +134,13 @@ public class RestaurantServiceTest {
                 .name("Pizza House")
                 .address("Seoul")
                 .build();
+
         given(restaurantRepository.findById(1004L)).willReturn(Optional.of(restaurant));
+
         restaurantService.updateRestaurant(1004L, "Pizza School", "Busan");
 
         assertThat(restaurant.getName(), is("Pizza School"));
+
         assertThat(restaurant.getAddress(), is("Busan"));
     }
 
