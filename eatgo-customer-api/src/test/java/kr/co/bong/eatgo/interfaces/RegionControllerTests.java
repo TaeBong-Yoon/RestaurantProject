@@ -1,6 +1,5 @@
 package kr.co.bong.eatgo.interfaces;
 
-import antlr.build.Tool;
 import kr.co.bong.eatgo.application.RegionService;
 import kr.co.bong.eatgo.domain.Region;
 import org.junit.Test;
@@ -16,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -44,21 +42,6 @@ public class RegionControllerTests {
         mvc.perform(get("/regions"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Seoul")));
-    }
-
-    @Test
-    public void create()throws Exception{
-
-        Region region =  Region.builder().name("Seoul").build();
-        given(regionService.addRegion("Seoul")).willReturn(region);
-
-        mvc.perform(post("/regions")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Seoul\"}"))
-                .andExpect(status().isCreated())
-                .andExpect(content().string("{}"));
-
-        verify(regionService).addRegion("Seoul");
     }
 
 }
