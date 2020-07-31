@@ -1,6 +1,5 @@
 package kr.co.bong.eatgo.domain;
 
-import kr.co.bong.eatgo.domain.Review;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;

@@ -1,8 +1,7 @@
 package kr.co.bong.eatgo.application;
 
-import kr.co.bong.eatgo.application.ReviewService;
 import kr.co.bong.eatgo.domain.Review;
-import kr.co.bong.eatgo.interfaces.ReviewRepository;
+import kr.co.bong.eatgo.domain.ReviewRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

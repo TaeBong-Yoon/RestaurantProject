@@ -1,7 +1,6 @@
 package kr.co.bong.eatgo.application;
 
 import kr.co.bong.eatgo.domain.*;
-import kr.co.bong.eatgo.interfaces.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
