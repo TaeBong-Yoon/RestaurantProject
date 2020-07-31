@@ -1,7 +1,7 @@
 package kr.co.bong.eatgo.application;
 
 import kr.co.bong.eatgo.domain.Review;
-import kr.co.bong.eatgo.interfaces.ReviewRepository;
+import kr.co.bong.eatgo.domain.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
