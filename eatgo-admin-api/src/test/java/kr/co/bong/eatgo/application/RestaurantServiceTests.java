@@ -38,6 +38,7 @@ public class RestaurantServiceTests {
 
         Restaurant restaurant = Restaurant.builder()
                 .id(1004L)
+                .categoryId(1L)
                 .name("Curry House")
                 .address("Seoul")
                 .build();
