@@ -1,8 +1,8 @@
 package kr.co.bong.eatgo.interfaces;
 
-import kr.co.bong.eatgo.application.ReviewService;
+import kr.co.bong.eatgo.application.UserService;
 import kr.co.bong.eatgo.domain.Review;
-import kr.co.bong.eatgo.interfaces.ReviewController;
+import kr.co.bong.eatgo.domain.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -22,39 +23,33 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(ReviewController.class)
-public class ReviewControllerTests {
+@WebMvcTest(UserController.class)
+public class UserControllerTests {
 
     @Autowired
     MockMvc mvc;
 
     @MockBean
-    private ReviewService reviewService;
+    private UserService userService;
 
     @Test
-    public void createWithValidAttributes() throws Exception {
+    public void create() throws Exception {
+        User mockUser = User.builder()
+                .id(1004L)
+                .email("tester@test.com")
+                .name("tester")
+                .password("test")
+                .build();
 
-        given(reviewService.addReview(eq(1L),any())).willReturn(
-                Review.builder().id(1004L).build()
-        );
+        given(userService.registerUser("tester@test.com","tester","test"))
+                .willReturn(mockUser);
 
-        mvc.perform(post("/restaurants/1/reviews")
+        mvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"user\",\"score\":3,\"description\":\"good\"}"))
+                .content("{\"email\":\"tester@test.com\",\"name\":\"tester\",\"password\":\"test\"}"))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("location","/restaurants/1/reviews/1004"));
+                .andExpect(header().string("location", "/users/1004"));
 
-        verify(reviewService).addReview(eq(1L),any());
+        verify(userService).registerUser(eq("tester@test.com"),eq("tester"),eq("test"));
     }
-
-    @Test
-    public void createWithInvalidAttributes() throws Exception {
-        mvc.perform(post("/restaurants/1/reviews")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-                .andExpect(status().isBadRequest());
-
-        verify(reviewService, never()).addReview(eq(1L),any());
-    }
-
 }
